@@ -16,12 +16,13 @@ int main(void) {
    memset(document_types, 0, sizeof(document_types));
    memset(directory, 0, sizeof(directory));
    memset(type_to_watch, 0, sizeof(type_to_watch));
-
+   
+   log_writer("Log file created/opened");
    read_file(audio_types,video_types,photo_types,document_types,directory,type_to_watch);
 
    //while(1){
    //sleep(30);
-
+   
    recursive_search(directory[0],audio_types,video_types,photo_types,document_types,type_to_watch);
 
    //}

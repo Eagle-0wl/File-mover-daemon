@@ -3,10 +3,54 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
-extern void log_writer()
+#include <sys/stat.h>
+#include <time.h>
+
+extern void log_writer(char *text)
 {
+    FILE *file;
+    char *file_name="log_file.txt";
+    if ((file = fopen(file_name, "a")))
+    {
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+        fprintf(file,"%d-%02d-%02d %02d:%02d:%02d %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text);
+        fclose(file);
+    }
+    else
+    {
+        printf("Failed to open log file");
+        exit(-1);
+    }
 
 }
+
+void rek_mkdir(char *path) {
+    char *sep = strrchr(path, '/');
+    if(sep != NULL) {
+        *sep = 0;
+        rek_mkdir(path);
+        *sep = '/';
+    }
+    if(!mkdir(path, 0777))
+    {   
+        char string[1000]="Path created:";
+        strcat(string, path);
+        log_writer(string);
+    }
+}
+
+FILE *fopen_mkdir(char *path, char *mode) {
+    char *sep = strrchr(path, '/');
+    if(sep) { 
+        char *path0 = strdup(path);
+        path0[ sep - path ] = 0;
+        rek_mkdir(path0);
+        free(path0);
+    }
+    return fopen(path,mode);
+}
+
 extern void move_file (const char *d_name, char *file_type, char types[50][30],const char *file_location)
 {
     char add_dot[30]=".";
@@ -33,13 +77,18 @@ extern void move_file (const char *d_name, char *file_type, char types[50][30],c
                 DIR *d;
     
                 // Open the directory specified by "dir_name".
+
                 d = opendir (new_location);
 
                 // Check if it was opened. 
                 if (! d) 
                 {
-                    printf ("Cannot open directory");
-                    exit (EXIT_FAILURE);
+                    log_writer("Cannot open directory");
+
+                    if (fopen_mkdir(new_location,"w")){
+                        log_writer("Failed to created path");
+                        exit(-1);
+                    }
                 }   
                 closedir (d);
 
@@ -48,21 +97,26 @@ extern void move_file (const char *d_name, char *file_type, char types[50][30],c
 
                 if( access( new_location, F_OK ) == 0 ) 
                 {
-                    printf ("File already exist abort");
+                    log_writer("File already exist abort");
                 }
                 else{
 
                     if(rename(old_location,new_location))
                     {
-                        printf("Move failed"); 
+                        log_writer("Move failed"); 
                     }
                     else 
-                    {
-                    //printf("Move successful");
+                    { 
+                        char string[4895]="Moved: ";    // old_location+new_location+text+file name = 4895 characters max
+                        strcat(string, d_name);
+                        strcat(string, " from ");
+                        strcat(string, old_location);
+                        strcat(string, " to ");
+                        strcat(string, new_location);
+                        log_writer(string);
+                        memset(string,0,sizeof(string));
                     }
-                }
-
-                                        
+                }                                 
             }
             memset(add_dot, 0, sizeof(add_dot));
             strcpy(add_dot,".");
@@ -81,7 +135,7 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
     // Check if it was opened. 
     if (! d) 
     {
-        printf ("Cannot open directory");
+        log_writer("Cannot open directory");
         exit (EXIT_FAILURE);
     }
     while (1) 
@@ -123,7 +177,7 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
                 path_length = snprintf (path, PATH_MAX,"%s/%s", dir_name, d_name);
                 if (path_length >= PATH_MAX) 
                 {
-                    printf ("Path length has got too long.\n");
+                    log_writer ("Path length has got too long.");
                     exit (EXIT_FAILURE);
                 }
                 // Recursively call "list_dir" with the new path. 
@@ -135,7 +189,7 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
     //After going through all the entries, close the directory. 
     if (closedir (d)) 
     {
-        printf ("Could not close");
+        log_writer ("failed to close");
         exit (EXIT_FAILURE);
     }
 }
@@ -158,6 +212,7 @@ for (int i=strlen(type_name)+1; i<=strlen(temp_string);i++){
     }
     type_calc=0;
 }
+
 extern void read_file(char audio_types[50][30], char video_types[50][30], char photo_types[50][30], 
                         char document_types[50][30], char directory[1][30],char type_to_watch[4][30])
 {
@@ -167,7 +222,7 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
     file=fopen(filename,"r");               //opening file for read operation
     if (file == NULL) 
         {   
-            printf("Error! Could not open file\n"); 
+            log_writer("Error! Could not open file"); 
             exit(-1);
         } 
     char *video="video_types";
@@ -222,13 +277,13 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
     }
             if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)
             {
-                //printf ("Somethings wrong with config file!\n");
+                log_writer ("Somethings wrong with config file!");
                 fclose(file);                           //close file
                 exit(-1);
             }
              else 
             {
-                //printf ("Config file read correctly!\n");
+                log_writer("Config file read correctly!");
             } 
     fclose(file);
 }
