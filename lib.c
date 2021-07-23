@@ -2,22 +2,67 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-
+#include <unistd.h>
 extern void log_writer()
 {
 
 }
-extern void move_file (const char *d_name, char *file_type, char audio_types[50][30])
+extern void move_file (const char *d_name, char *file_type, char types[50][30],const char *file_location)
 {
-    char add_dot[30];
+    char add_dot[30]=".";
+    char old_location[4096];        //max path length for linux is 4096 characters
+    char new_location[527];         //for new location by specifications max path length can be 527 characters
+    
     for (int i=0;i<50; i++)
     {
-        if(strlen(audio_types[i]) != 0){
+        memset(old_location, 0, sizeof(old_location));
+        memset(new_location,0 ,sizeof(new_location));
+
+        if(strlen(types[i]) != 0){
+            strncat(add_dot, types[i], strlen (types[i]));
             
-            strncat(add_dot, audio_types[i], strlen (audio_types[i]));
             if (strstr(d_name,add_dot))
-            {
-                printf("%s\n",d_name);    //CHANGE TO MOVE AND CHECK IF MOVED                           
+            {   
+                strcpy(old_location,file_location);
+                strcat(old_location,"/");
+                strcat(old_location,d_name);
+                strcpy(new_location,"/home/");
+                strcat(new_location,getenv("LOGNAME"));
+                strcat(new_location,"/"); 
+                strcat(new_location,file_type);
+                DIR *d;
+    
+                // Open the directory specified by "dir_name".
+                d = opendir (new_location);
+
+                // Check if it was opened. 
+                if (! d) 
+                {
+                    printf ("Cannot open directory");
+                    exit (EXIT_FAILURE);
+                }   
+                closedir (d);
+
+                strcat(new_location,"/");
+                strcat(new_location,d_name); 
+
+                if( access( new_location, F_OK ) == 0 ) 
+                {
+                    printf ("File already exist abort");
+                }
+                else{
+
+                    if(rename(old_location,new_location))
+                    {
+                        printf("Move failed"); 
+                    }
+                    else 
+                    {
+                    //printf("Move successful");
+                    }
+                }
+
+                                        
             }
             memset(add_dot, 0, sizeof(add_dot));
             strcpy(add_dot,".");
@@ -54,10 +99,10 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
 
         d_name = entry->d_name;
 
-        move_file(d_name,"audio",audio_types);
-        move_file(d_name,"video",video_types);
-        move_file(d_name,"photo",photo_types);
-        move_file(d_name,"document",document_types);
+        move_file(d_name,"Music",audio_types,dir_name);
+        move_file(d_name,"Videos",video_types,dir_name);
+        move_file(d_name,"Pictures",photo_types,dir_name);
+        move_file(d_name,"Documents",document_types,dir_name);
    
         if (entry->d_type != DT_DIR) 
         {   
@@ -133,6 +178,7 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
     char *types_name="types_to_watch";
 
     char temp_string[50];
+    memset(temp_string, 0, sizeof temp_string);
 
     while((s=fgetc(file))!=EOF)         //loop reads file character by character till end
     {
@@ -172,6 +218,17 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
 
             memset(temp_string, 0, sizeof temp_string);
         }
+        
     }
-    fclose(file);                           //close file
+            if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)
+            {
+                //printf ("Somethings wrong with config file!\n");
+                fclose(file);                           //close file
+                exit(-1);
+            }
+             else 
+            {
+                //printf ("Config file read correctly!\n");
+            } 
+    fclose(file);
 }

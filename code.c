@@ -24,8 +24,6 @@ int main(void) {
 
    recursive_search(directory[0],audio_types,video_types,photo_types,document_types,type_to_watch);
 
-
-
    //}
    return 0;
 }
