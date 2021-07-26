@@ -9,44 +9,44 @@
 extern void log_writer(char *text)
 {
     FILE *file;
-    char *file_name="log_file.txt";
+    char *file_name="/home/darius/Desktop/File_mover_daemon/log_file.txt";
     if ((file = fopen(file_name, "a")))
     {
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
-        fprintf(file,"%d-%02d-%02d %02d:%02d:%02d %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text);
+        fprintf(file,"%d-%02d-%02d %02d:%02d:%02d %s\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text); //Time stamp with every line of logs
         fclose(file);
     }
     else
     {
-        printf("Failed to open log file");
-        exit(-1);
+        printf("Error! Failed to open log file");
+        exit(EXIT_FAILURE);
     }
 
 }
 
 void rek_mkdir(char *path) {
     char *sep = strrchr(path, '/');
-    if(sep != NULL) {
+    if(sep != NULL) {                       //if previous folder exist create new folder
         *sep = 0;
         rek_mkdir(path);
         *sep = '/';
     }
-    if(!mkdir(path, 0777))
+    if(!mkdir(path, 0777))                  //if folder created log to file
     {   
-        char string[1000]="Path created:";
+        char string[4110]="Path created: "; 
         strcat(string, path);
         log_writer(string);
     }
 }
 
 FILE *fopen_mkdir(char *path, char *mode) {
-    char *sep = strrchr(path, '/');
-    if(sep) { 
-        char *path0 = strdup(path);
-        path0[ sep - path ] = 0;
-        rek_mkdir(path0);
-        free(path0);
+    char *sep = strrchr(path, '/');          //gets last folder name
+    if(sep) {                                //checks if it go name correctly
+        char *path0 = strdup(path);          //pointer to a new string
+        path0[ sep - path ] = 0;             
+        rek_mkdir(path0);                    //sends path to recursive directory making function   
+        free(path0);                         //freeing pointer
     }
     return fopen(path,mode);
 }
@@ -54,58 +54,58 @@ FILE *fopen_mkdir(char *path, char *mode) {
 extern void move_file (const char *d_name, char *file_type, char types[50][30],const char *file_location)
 {
     char add_dot[30]=".";
-    char old_location[4096];        //max path length for linux is 4096 characters
-    char new_location[527];         //for new location by specifications max path length can be 527 characters
+    char old_location[4096];                //max path length for linux is 4096 characters
+    char new_location[527];                 //for new location by specifications max path length can be 527 characters
     
     for (int i=0;i<50; i++)
     {
-        memset(old_location, 0, sizeof(old_location));
+        /* initialize arrays as NULL */
+        memset(old_location, 0, sizeof(old_location));    
         memset(new_location,0 ,sizeof(new_location));
 
-        if(strlen(types[i]) != 0){
-            strncat(add_dot, types[i], strlen (types[i]));
+        if(strlen(types[i]) != 0)           //checks if extentions for that file type are awailable
+        { 
+            strncat(add_dot, types[i], strlen (types[i]));      //add dot before extension, so program only checks for file extensions
             
             if (strstr(d_name,add_dot))
-            {   
+            {                                                   /*creating path where to move the file*/
                 strcpy(old_location,file_location);
                 strcat(old_location,"/");
                 strcat(old_location,d_name);
                 strcpy(new_location,"/home/");
-                strcat(new_location,getenv("LOGNAME"));
+                strcat(new_location,getenv("LOGNAME"));         //getting user name
                 strcat(new_location,"/"); 
-                strcat(new_location,file_type);
+                strcat(new_location,file_type);                 //setting location based on file type
+
+
                 DIR *d;
-    
-                // Open the directory specified by "dir_name".
-
-                d = opendir (new_location);
-
-                // Check if it was opened. 
-                if (! d) 
+                d = opendir (new_location);                     //opening directory
+                
+                if (! d)                                        // Check if it was opened. 
                 {
-                    log_writer("Cannot open directory");
+                    log_writer("Error! Cannot open directory");
 
-                    if (fopen_mkdir(new_location,"w")){
-                        log_writer("Failed to created path");
-                        exit(-1);
+                    if (fopen_mkdir(new_location,"w")){         //try to create directory recursivly
+                        log_writer("Error! Failed to created path");   
+                        exit(EXIT_FAILURE);                               
                     }
                 }   
-                closedir (d);
-
-                strcat(new_location,"/");
+                closedir (d);                                   //clode directory
+                                                                /*add file name to path*/
+                strcat(new_location,"/");                       
                 strcat(new_location,d_name); 
 
-                if( access( new_location, F_OK ) == 0 ) 
+                if( access( new_location, F_OK ) == 0 )         //check if there is a file in a directory
                 {
-                    log_writer("File already exist abort");
+                    log_writer("Error! File already exist abort");
                 }
                 else{
 
-                    if(rename(old_location,new_location))
+                    if(rename(old_location,new_location))           //try to move file
                     {
-                        log_writer("Move failed"); 
+                        log_writer("Error! Move failed"); 
                     }
-                    else 
+                    else                                            //log to file successful move
                     { 
                         char string[4895]="Moved: ";    // old_location+new_location+text+file name = 4895 characters max
                         strcat(string, d_name);
@@ -114,11 +114,11 @@ extern void move_file (const char *d_name, char *file_type, char types[50][30],c
                         strcat(string, " to ");
                         strcat(string, new_location);
                         log_writer(string);
-                        memset(string,0,sizeof(string));
+                        memset(string,0,sizeof(string)); 
                     }
                 }                                 
             }
-            memset(add_dot, 0, sizeof(add_dot));
+            memset(add_dot, 0, sizeof(add_dot));//initializing array to null
             strcpy(add_dot,".");
         }
     }
@@ -128,14 +128,13 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
                         char photo_types[50][30], char document_types[50][30],char type_to_watch[4][30])
 {
     DIR * d;
-    
     // Open the directory specified by "dir_name".
     d = opendir (dir_name);
 
     // Check if it was opened. 
     if (! d) 
     {
-        log_writer("Cannot open directory");
+        log_writer("Error! Cannot open directory");
         exit (EXIT_FAILURE);
     }
     while (1) 
@@ -152,12 +151,12 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
         }
 
         d_name = entry->d_name;
-
+        /* calling move function to move file */
         move_file(d_name,"Music",audio_types,dir_name);
         move_file(d_name,"Videos",video_types,dir_name);
         move_file(d_name,"Pictures",photo_types,dir_name);
         move_file(d_name,"Documents",document_types,dir_name);
-   
+
         if (entry->d_type != DT_DIR) 
         {   
             char filedir[]="";
@@ -189,26 +188,28 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
     //After going through all the entries, close the directory. 
     if (closedir (d)) 
     {
-        log_writer ("failed to close");
+        log_writer ("Error!  Failed to close");
         exit (EXIT_FAILURE);
     }
 }
 
-extern void types(char *temp_string,char type[50][30],char *type_name){
-char ch;
-int type_calc=0;
-for (int i=strlen(type_name)+1; i<=strlen(temp_string);i++){
+extern void types(char *temp_string,char type[50][30],char *type_name)
+{
+    char ch;
+    int type_calc=0;
+    for (int i=strlen(type_name)+1; i<=strlen(temp_string);i++)         //starts at end of type_name+1 goes through the whole line symbol by symbol 
+    {        
     
-    if (temp_string[i]!=',')
-    {
-        ch=temp_string[i];
-        strncat(type[type_calc], &ch, 1);
-    }
+        if (temp_string[i]!=',')                                        //if comma found 
+        {
+            ch=temp_string[i];                                          //get char from array
+            strncat(type[type_calc], &ch, 1);                           //save that chat to type array
+        }
 
-    else if (temp_string[i]==',' ||temp_string[i]=='\n')
-    {    
-        type_calc++;   
-    }
+        else if (temp_string[i]==',' ||temp_string[i]=='\n')            //if another comma found or end of line reached increment the counter
+        {    
+            type_calc++;                                                //incriment counter
+        }
     }
     type_calc=0;
 }
@@ -216,15 +217,16 @@ for (int i=strlen(type_name)+1; i<=strlen(temp_string);i++){
 extern void read_file(char audio_types[50][30], char video_types[50][30], char photo_types[50][30], 
                         char document_types[50][30], char directory[1][30],char type_to_watch[4][30])
 {
-    char *filename = "Config.txt";
+    char *filename = "/home/darius/Desktop/File_mover_daemon/Config.txt";   //config file location
     FILE *file;    
     char s;                                 //variable used to get char from file
     file=fopen(filename,"r");               //opening file for read operation
-    if (file == NULL) 
+    if (file == NULL)                       //check if file opend
         {   
             log_writer("Error! Could not open file"); 
-            exit(-1);
+            exit(EXIT_FAILURE);
         } 
+    /*creating char arrays with types*/
     char *video="video_types";
     char *audio="audio_types";
     char *photo="photo_types";
@@ -232,20 +234,22 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
     char *dirname="dir_to_watch";
     char *types_name="types_to_watch";
 
+    //creating and initializing temporary string used for reading file
     char temp_string[50];
     memset(temp_string, 0, sizeof temp_string);
 
-    while((s=fgetc(file))!=EOF)         //loop reads file character by character till end
+    while((s=fgetc(file))!=EOF)         //loop reads file character by character till end of file
     {
-        if (s != '\n')
+        if (s != '\n')                  //check if its not end of file
         {
-            if (s != ' ' && s != '\n')
+            if (s != ' ' && s != '\n')  //read every character except spaces and end of line characters
             {
                 strncat(temp_string, &s, 1);
             }
         }
-        else 
-        {
+        else                            //if file end reached
+        {   
+            /*checks for file type and calls function which assings file extensions to that file type */
             if (strstr(temp_string,audio))
             {
                 types (temp_string,audio_types,audio);
@@ -271,15 +275,15 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
                 types(temp_string,type_to_watch,types_name); 
             }
 
-            memset(temp_string, 0, sizeof temp_string);
+            memset(temp_string, 0, sizeof temp_string);         //clearing temporary string
         }
         
     }
-            if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)
+            if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)     //checks if config file read correctly
             {
-                log_writer ("Somethings wrong with config file!");
+                log_writer ("Somethings wrong with config file!");  
                 fclose(file);                           //close file
-                exit(-1);
+                exit(EXIT_FAILURE);
             }
              else 
             {
