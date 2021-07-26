@@ -1,4 +1,0 @@
-2021-07-26 15:20:48 Log file created/opened
-2021-07-26 15:20:48 Config file read correctly!
-2021-07-26 15:20:48 Cycle complete
-2021-07-26 15:21:18 Cycle complete
