@@ -49,6 +49,11 @@ int main(void) {
    char document_types[50][4096];            //50 document types of 4096 char lenght
    char directory[50][4096];                  //directory
    char type_to_watch[4][4096];                
+
+   char audio_loc[1][4096];
+   char video_loc[1][4096];
+   char photo_loc[1][4096];
+   char document_loc[1][4096];
    /* initialize arrays as NULL*/
    memset(audio_types, 0, sizeof(audio_types));
    memset(video_types, 0, sizeof(video_types));
@@ -57,22 +62,27 @@ int main(void) {
    memset(directory, 0, sizeof(directory));
    memset(type_to_watch, 0, sizeof(type_to_watch));
 
+   memset(audio_loc, 0, sizeof(audio_loc));
+   memset(video_loc, 0, sizeof(video_loc));
+   memset(photo_loc, 0, sizeof(photo_loc));
+   memset(document_loc, 0, sizeof(document_loc));
 
-   read_file(audio_types,video_types,photo_types,document_types,directory,type_to_watch); //read config file
+
+   
+   read_file(audio_types,video_types,photo_types,document_types,directory,type_to_watch, audio_loc, video_loc, photo_loc, document_loc); //read config file
+   
    /* infinite while loop to execute code every 30 seconds */
-  
    while(1){
 
       for (int i=0;i<50;i++)        //goes through all directories
       {
          if(strlen(directory[i]) != 0)
          {
-            recursive_search(directory[i],audio_types,video_types,photo_types,document_types,type_to_watch);
+            recursive_search(directory[i],audio_types,video_types,photo_types,document_types,type_to_watch,audio_loc, video_loc ,photo_loc,document_loc);
          }
       }
       log_writer("Cycle complete");
       sleep(30);
    }
-
    exit(EXIT_SUCCESS);
 }

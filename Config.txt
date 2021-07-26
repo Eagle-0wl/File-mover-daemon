@@ -6,3 +6,8 @@ document_types = docx,txt,pdf
 dir_to_watch = /home/darius/Desktop/files, /home/darius/Downloads
 
 types_to_watch = audio,document
+
+audio_files_location = /home/darius/Music
+video_files_location = /home/darius/Videos
+document_files_location = /home/darius/test
+photo_files_location = /home/darius/Pictures
