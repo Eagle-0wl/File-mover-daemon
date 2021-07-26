@@ -3,6 +3,6 @@ video_types = mkv,avi,mp4
 photo_types = svg,jpg,png
 document_types = docx,txt,pdf
 
-dir_to_watch = /home/darius/Downloads
+dir_to_watch = /home/darius/Desktop/files, /home/darius/Downloads
 
 types_to_watch = audio,document

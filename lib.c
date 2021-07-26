@@ -51,9 +51,10 @@ FILE *fopen_mkdir(char *path, char *mode) {
     return fopen(path,mode);
 }
 
-extern void move_file (const char *d_name, char *file_type, char types[50][30],const char *file_location)
+extern void move_file (const char *d_name, char *file_type, char types[50][4096],const char *file_location)
 {
-    char add_dot[30]=".";
+    
+    char add_dot[4096]=".";
     char old_location[4096];                //max path length for linux is 4096 characters
     char new_location[527];                 //for new location by specifications max path length can be 527 characters
     
@@ -124,8 +125,8 @@ extern void move_file (const char *d_name, char *file_type, char types[50][30],c
     }
 }
 
-extern void recursive_search (const char * dir_name,  char audio_types[50][30], char video_types[50][30], 
-                        char photo_types[50][30], char document_types[50][30],char type_to_watch[4][30])
+extern void recursive_search (const char * dir_name,  char audio_types[50][4096], char video_types[50][4096], 
+                        char photo_types[50][4096], char document_types[50][4096],char type_to_watch[4][4096])
 {
     DIR * d;
     // Open the directory specified by "dir_name".
@@ -193,7 +194,7 @@ extern void recursive_search (const char * dir_name,  char audio_types[50][30], 
     }
 }
 
-extern void types(char *temp_string,char type[50][30],char *type_name)
+extern void types(char *temp_string,char type[50][4096],char *type_name)
 {
     char ch;
     int type_calc=0;
@@ -214,8 +215,8 @@ extern void types(char *temp_string,char type[50][30],char *type_name)
     type_calc=0;
 }
 
-extern void read_file(char audio_types[50][30], char video_types[50][30], char photo_types[50][30], 
-                        char document_types[50][30], char directory[1][30],char type_to_watch[4][30])
+extern void read_file(char audio_types[50][4096], char video_types[50][4096], char photo_types[50][4096], 
+                        char document_types[50][4096], char directory[50][4096],char type_to_watch[4][4096])
 {
     char *filename = "/home/darius/Desktop/File_mover_daemon/Config.txt";   //config file location
     FILE *file;    
@@ -235,21 +236,21 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
     char *types_name="types_to_watch";
 
     //creating and initializing temporary string used for reading file
-    char temp_string[50];
+    char temp_string[4096];
     memset(temp_string, 0, sizeof temp_string);
-
+    
     while((s=fgetc(file))!=EOF)         //loop reads file character by character till end of file
     {
         if (s != '\n')                  //check if its not end of file
         {
             if (s != ' ' && s != '\n')  //read every character except spaces and end of line characters
             {
-                strncat(temp_string, &s, 1);
+               strncat(temp_string, &s, 1);
             }
         }
         else                            //if file end reached
         {   
-            /*checks for file type and calls function which assings file extensions to that file type */
+            //checks for file type and calls function which assings file extensions to that file type 
             if (strstr(temp_string,audio))
             {
                 types (temp_string,audio_types,audio);
@@ -275,11 +276,11 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
                 types(temp_string,type_to_watch,types_name); 
             }
 
-            memset(temp_string, 0, sizeof temp_string);         //clearing temporary string
+            memset(temp_string, 0, sizeof temp_string);         //clearing temporary string*/ 
         }
         
     }
-            if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)     //checks if config file read correctly
+            if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)     //checks if config file read
             {
                 log_writer ("Somethings wrong with config file!");  
                 fclose(file);                           //close file
@@ -288,6 +289,6 @@ extern void read_file(char audio_types[50][30], char video_types[50][30], char p
              else 
             {
                 log_writer("Config file read correctly!");
-            } 
+            }
     fclose(file);
 }

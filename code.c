@@ -37,18 +37,18 @@ int main(void) {
       exit(EXIT_FAILURE);
    }
         
-   /* Close out the standard file descriptors */
+   //Close out the standard file descriptors 
    close(STDIN_FILENO);
    close(STDOUT_FILENO);
    close(STDERR_FILENO);
         
    /* create two dimensional string arrays for storing data from config file */     
-   char audio_types[50][30];               //50 audio types of 30 char lenght
-   char video_types[50][30];               //50 video types of 30 char lenght
-   char photo_types[50][30];               //50 photo types of 30 char lenght
-   char document_types[50][30];            //50 document types of 30 char lenght
-   char directory[1][30];                  //directory
-   char type_to_watch[4][30];                
+   char audio_types[50][4096];               //50 audio types of 4096 char lenght
+   char video_types[50][4096];               //50 video types of 4096 char lenght
+   char photo_types[50][4096];               //50 photo types of 4096 char lenght
+   char document_types[50][4096];            //50 document types of 4096 char lenght
+   char directory[50][4096];                  //directory
+   char type_to_watch[4][4096];                
    /* initialize arrays as NULL*/
    memset(audio_types, 0, sizeof(audio_types));
    memset(video_types, 0, sizeof(video_types));
@@ -60,10 +60,18 @@ int main(void) {
 
    read_file(audio_types,video_types,photo_types,document_types,directory,type_to_watch); //read config file
    /* infinite while loop to execute code every 30 seconds */
+  
    while(1){
-   recursive_search(directory[0],audio_types,video_types,photo_types,document_types,type_to_watch);
-   log_writer("Cycle complete");
-   sleep(30);
+
+      for (int i=0;i<50;i++)        //goes through all directories
+      {
+         if(strlen(directory[i]) != 0)
+         {
+            recursive_search(directory[i],audio_types,video_types,photo_types,document_types,type_to_watch);
+         }
+      }
+      log_writer("Cycle complete");
+      sleep(30);
    }
 
    exit(EXIT_SUCCESS);
