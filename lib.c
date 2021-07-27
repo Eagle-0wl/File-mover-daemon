@@ -269,65 +269,68 @@ extern void read_file(char audio_types[50][4096], char video_types[50][4096], ch
     //creating and initializing temporary string used for reading file
     char temp_string[4096];
     memset(temp_string, 0, sizeof temp_string);
-        while ((fgets(temp_string, 256, file)) != NULL) {
+    while ((fgets(temp_string, 256, file)) != NULL) 
+    {
         remove_white_spaces (temp_string);
         
-            if (strlen(temp_string)!=0 && !strstr (temp_string,"\n")) {
+        if (strlen(temp_string)!=0 && !strstr (temp_string,"\n")) 
+        {
                 
-                if (strstr(temp_string,audio))
-                {
-                    types (temp_string,audio_types,audio);
-                }
-                else if (strstr(temp_string,video))
-                {
-                    types (temp_string,video_types,video);
-                }
-                else if (strstr(temp_string,photo))
-                {
-                    types (temp_string,photo_types,photo);
-                }
-                else if (strstr(temp_string,document))
-                {
-                    types (temp_string,document_types,document);
-                }
-                else if (strstr(temp_string,dirname))
-                {
-                    types (temp_string,directory,dirname);
-                }
-                else if (strstr(temp_string,types_name))
-                {
-                    types(temp_string,type_to_watch,types_name); 
-                }
-                else if (strstr(temp_string,audio_location))
-                {
-                    types(temp_string,audio_loc,audio_location); 
-                }
-                else if (strstr(temp_string,video_location))
-                {   
-                    types(temp_string,video_loc,video_location); 
-                }
-                else if (strstr(temp_string,photo_location))
-                {   
-                    types(temp_string,photo_loc,photo_location); 
-                    
-                }
-                else if (strstr(temp_string,document_location))
-                {   
-                    types(temp_string,document_loc,document_location); 
-                    
-                }
+            if (strstr(temp_string,audio))
+            {
+                types (temp_string,audio_types,audio);
             }
+            else if (strstr(temp_string,video))
+            {
+                types (temp_string,video_types,video);
+            }
+            else if (strstr(temp_string,photo))
+            {
+                types (temp_string,photo_types,photo);
+            }
+            else if (strstr(temp_string,document))
+            {
+                types (temp_string,document_types,document);
+            }
+            else if (strstr(temp_string,dirname))
+            {
+                types (temp_string,directory,dirname);
+            }
+            else if (strstr(temp_string,types_name))
+            {
+                types(temp_string,type_to_watch,types_name); 
+            }
+            else if (strstr(temp_string,audio_location))
+            {
+                types(temp_string,audio_loc,audio_location); 
+            }
+            else if (strstr(temp_string,video_location))
+            {   
+                types(temp_string,video_loc,video_location); 
+            }
+            else if (strstr(temp_string,photo_location))
+            {   
+                types(temp_string,photo_loc,photo_location); 
+                    
+            }
+            else if (strstr(temp_string,document_location))
+            {   
+                types(temp_string,document_loc,document_location);    
+            }
+        }
             memset(temp_string, 0, sizeof temp_string);         //clearing temporary string*/ 
     }
-            if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)     //checks if config file read
-            {
-                log_writer ("Somethings wrong with config file!");  
-                fclose(file);                           //close file
-                exit(EXIT_FAILURE);
-            }
-             else 
-            {
-                log_writer("Config file read correctly!");
-            }
+
+    if (strlen(type_to_watch[0]) == 0 && strlen(directory[0]) == 0)     //checks if config file read
+    {
+        log_writer ("Somethings wrong with config file!");  
+        fclose(file);                           //close file
+        exit(EXIT_FAILURE);
+    }
+    else 
+    {
+        log_writer("Config file read correctly!");
+    }
+    
     fclose(file);
 }

@@ -41,7 +41,7 @@ int main(void) {
    close(STDIN_FILENO);
    close(STDOUT_FILENO);
    close(STDERR_FILENO);
-        
+   
    /* create two dimensional string arrays for storing data from config file */     
    char audio_types[50][4096];               //50 audio types of 4096 char lenght
    char video_types[50][4096];               //50 video types of 4096 char lenght
